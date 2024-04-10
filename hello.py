@@ -39,11 +39,15 @@ def watch_file():
             else:
                 time.sleep(0.1)  # Wait for new data to be appended
 
+watch_thread = None
+
 @socketio.on('connect')
 def handle_connect():
+    global watch_thread
     emit('logUpdate', {'data': last_lines})
-    thread = Thread(target=watch_file)
-    thread.start()
+    if watch_thread is None or not watch_thread.is_alive():
+        watch_thread = Thread(target=watch_file)
+        watch_thread.start()
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
